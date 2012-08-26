@@ -9,11 +9,11 @@ using System.Windows.Forms;
 
 namespace Player
 {
-    public partial class addUrlForm : Form
+    public partial class AddUrlForm : Form
     {
         public string path = "";
         
-        public addUrlForm()
+        public AddUrlForm()
         {
             InitializeComponent();
             txtPath.Select();

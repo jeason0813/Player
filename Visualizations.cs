@@ -21,7 +21,7 @@ namespace Player
             InitializeComponent();
         }
 
-        public void stop()
+        public void Stop()
         {
             timer.Stop();
 
@@ -40,7 +40,7 @@ namespace Player
 
         // calculates the level of a stereo signal between 0 and 65535
         // where 0 = silent, 32767 = 0dB and 65535 = +6dB
-        private void getLevel(int channel, out int peakL, out int peakR)
+        private void GetLevel(int channel, out int peakL, out int peakR)
         {
             float maxL = 0f;
             float maxR = 0f;
@@ -89,7 +89,7 @@ namespace Player
         {
             int peakL = 0;
             int peakR = 0;
-            getLevel(MainForm.stream, out peakL, out peakR);
+            GetLevel(MainForm.stream, out peakL, out peakR);
 
             int progL = (int)peakL;
             int progR = (int)peakR;
@@ -125,20 +125,20 @@ namespace Player
 
         private void spectrumToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            setVisualization(VIS_SPECTRUM);
+            SetVisualization(VIS_SPECTRUM);
         }
 
         private void spectrumLineToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            setVisualization(VIS_SPECTRUMLINE);
+            SetVisualization(VIS_SPECTRUMLINE);
         }
 
         private void spectrumWaveToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            setVisualization(VIS_SPECTRUMWAVE);
+            SetVisualization(VIS_SPECTRUMWAVE);
         }
 
-        private void setVisualization(int vis)
+        private void SetVisualization(int vis)
         {
             selectedVis = vis;
             switch (vis)

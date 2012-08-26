@@ -10,7 +10,7 @@ namespace Player
 {
     class XSPF
     {
-        static public List<PlaylistItem> load(string path)
+        static public List<PlaylistItem> Load(string path)
         {
             List<PlaylistItem> ret = new List<PlaylistItem>();
 
@@ -40,7 +40,7 @@ namespace Player
                                         if (!System.IO.File.Exists(pa)) continue; //ignore stale entries
                                     }
                                     
-                                    ret.Add(getTags(pa));
+                                    ret.Add(GetTags(pa));
 
                                     trackFound = false;
                                 }
@@ -57,7 +57,7 @@ namespace Player
             return ret;
         }
 
-        static public void save(string path, List<PlaylistItem> items)
+        static public void Save(string path, List<PlaylistItem> items)
         {
             try
             {
@@ -93,7 +93,7 @@ namespace Player
             }
         }
 
-        static public PlaylistItem getTags(string path)
+        static public PlaylistItem GetTags(string path)
         {
             TAG_INFO tagInfo = new TAG_INFO(path);
 

@@ -17,12 +17,12 @@ namespace Player
         {
             InitializeComponent();
 
-            loadDevices();
+            LoadDevices();
 
             txtProxy.Text = Properties.Settings.Default.Proxy;
         }
 
-        private void loadDevices()
+        private void LoadDevices()
         {
             for (int i = 1; i < Bass.BASS_GetDeviceCount(); i++)
             {

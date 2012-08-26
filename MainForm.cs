@@ -33,14 +33,14 @@ namespace Player
         {
             InitializeComponent();
 
-            buildFilter();
-            buildUserAgent();
-            processCmdLine();
+            BuildFilter();
+            BuildUserAgent();
+            ProcessCmdLine();
 
             Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_NET_PLAYLIST, 1);
         }
 
-        private void buildFilter() //build the filter string for openFileDialog
+        private void BuildFilter() //build the filter string for openFileDialog
         {
             supportedExts.AddRange(Bass.SupportedStreamExtensions.Split(';'));
             supportedExts.AddRange(Bass.SupportedMusicExtensions.Split(';'));
@@ -62,7 +62,7 @@ namespace Player
             openFileDialog.Filter = filter;
         }
 
-        private void buildUserAgent() //build the user agent string for playing urls
+        private void BuildUserAgent() //build the user agent string for playing urls
         {
             string agent = "";
             object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
@@ -87,30 +87,30 @@ namespace Player
             Bass.BASS_SetConfigPtr(BASSConfig.BASS_CONFIG_NET_AGENT, userAgentPtr);
         }
 
-        private void processCmdLine()
+        private void ProcessCmdLine()
         {
             if (args.Length < 2) return;
 
             if (new System.IO.FileInfo(args[1]).Extension == ".xspf")
             {
-                List<PlaylistItem> loaded = XSPF.load(args[1]);
+                List<PlaylistItem> loaded = XSPF.Load(args[1]);
 
                 if (loaded.Count != 0)
                 {
                     foreach (PlaylistItem p in loaded)
-                        addToPlaylist(p);
+                        AddToPlaylist(p);
                 }
             }
             else
             {
                 for (int i = 1; i < args.Length; i++) //skip the first argument, it's just the exe
-                    addToPlaylist(XSPF.getTags(args[i]));
+                    AddToPlaylist(XSPF.GetTags(args[i]));
             }
             
-            play();
+            Play();
         }
 
-        private void play()
+        private void Play()
         {
             if (list.Count == 0) return;
 
@@ -162,18 +162,18 @@ namespace Player
             }
         }
 
-        private void pause()
+        private void Pause()
         {
             Bass.BASS_ChannelPause(stream);
             if (tagTimer.Enabled) tagTimer.Stop();
             timer.Stop();
             if (visForm.Visible && !visForm.IsDisposed)
-                visForm.stop();
+                visForm.Stop();
             paused = true;
             btnPlay.Image = (Image)Properties.Resources.control_play_blue;
         }
 
-        private void resume()
+        private void Resume()
         {
             Bass.BASS_ChannelPlay(stream, false);
             timer.Start();
@@ -184,7 +184,7 @@ namespace Player
             btnPlay.Image = (Image)Properties.Resources.control_pause_blue;
         }
 
-        private void stop()
+        private void Stop()
         {
             stopped = true;
 
@@ -201,14 +201,14 @@ namespace Player
             lblPos.Text = "-/-";
 
             if (visForm.Visible && !visForm.IsDisposed)
-                visForm.stop();
+                visForm.Stop();
 
             btnPlay.Image = (Image)Properties.Resources.control_play_blue;
         }
 
-        private void getTags()
+        private void GetTags()
         {
-            PlaylistItem item = XSPF.getTags(list[activeTrack].Path);
+            PlaylistItem item = XSPF.GetTags(list[activeTrack].Path);
 
             list[activeTrack].ListViewItem.SubItems[1].Text = item.Title;
             list[activeTrack].ListViewItem.SubItems[2].Text = item.Artist;
@@ -221,51 +221,51 @@ namespace Player
         private void btnPlay_Click(object sender, EventArgs e)
         {
             if (stopped)
-                play();
+                Play();
             else if (paused)
-                resume();
+                Resume();
             else if (!stopped && !paused)
-                pause();
+                Pause();
         }
 
         private void btnStop_Click(object sender, EventArgs e)
         {
             if (stopped) return;
 
-            stop();
+            Stop();
         }
 
         private void btnPrevious_Click(object sender, EventArgs e)
         {
             if (stopped || list.Count == 0) return;
             
-            stop();
+            Stop();
 
             if (activeTrack == 0)
                 activeTrack = list.Count - 1;
             else
                 activeTrack--;
 
-            play();
+            Play();
         }
 
         private void btnNext_Click(object sender, EventArgs e)
         {
             if (stopped || list.Count == 0) return;
             
-            stop();
+            Stop();
 
             if (activeTrack == list.Count - 1)
                 activeTrack = 0;
             else
                 activeTrack++;
 
-            play();
+            Play();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            stop();
+            Stop();
             Marshal.FreeHGlobal(userAgentPtr);
             Marshal.FreeHGlobal(proxyPtr);
         }
@@ -276,7 +276,7 @@ namespace Player
                 activeTrack = list.Count - 1;
             
             if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_STOPPED && list[activeTrack].Type != PlaylistItem.TYPE_STREAM_URL)
-                shouldPlayNext();
+                ShouldPlayNext();
             
             string length = null;
             double lSecsD = -1;
@@ -297,7 +297,7 @@ namespace Player
             if (!scrubbing && list[activeTrack].Type != PlaylistItem.TYPE_STREAM_URL)
             {
                 if (list[activeTrack].Type == PlaylistItem.TYPE_MUSIC && pSecsD >= lSecsD)
-                    shouldPlayNext();
+                    ShouldPlayNext();
                 else
                     trkPos.Value = (int)pSecsD;
             }
@@ -314,38 +314,38 @@ namespace Player
                 lblPos.Text = pos + "/" + length;
         }
 
-        private void shouldPlayNext()
+        private void ShouldPlayNext()
         {
             if (chkRepeatTrack.Checked)
                     Bass.BASS_ChannelPlay(stream, true);
             else if (chkRandom.Checked)
             {
-                stop();
+                Stop();
                 activeTrack = new Random().Next(list.Count - 1);
-                play();
+                Play();
             }
             else if (activeTrack == list.Count - 1)
             {
                 if (chkRepeatAll.Checked)
                 {
-                    stop();
+                    Stop();
                     activeTrack = 0;
-                    play();
+                    Play();
                 }
                 else
-                    stop();
+                    Stop();
             }
             else
             {
-                stop();
+                Stop();
                 activeTrack++;
-                play();
+                Play();
             }
         }
 
         private void tagTimer_Tick(object sender, EventArgs e)
         {
-            getTags();
+            GetTags();
         }
 
         private void trkVol_Scroll(object sender, EventArgs e)
@@ -380,26 +380,26 @@ namespace Player
                 return;
 
             foreach (string f in openFileDialog.FileNames)
-                addToPlaylist(XSPF.getTags(f));
+                AddToPlaylist(XSPF.GetTags(f));
 
             if (stopped)
-                play();
+                Play();
         }
 
         private void addUrlToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            addUrlForm form = new addUrlForm();
+            AddUrlForm form = new AddUrlForm();
             
             if (form.ShowDialog() != DialogResult.OK)
                 return;
 
             if (!stopped)
-                stop();
+                Stop();
 
-            addToPlaylist(XSPF.getTags(form.path));
+            AddToPlaylist(XSPF.GetTags(form.path));
 
             if (stopped)
-                play();
+                Play();
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -417,7 +417,7 @@ namespace Player
         {
             if (visForm.Visible)
             {
-                visForm.stop();
+                visForm.Stop();
                 visForm.Close();
             }
             else if (visForm.IsDisposed)
@@ -438,7 +438,7 @@ namespace Player
             if (openPlaylistDialog.ShowDialog() != DialogResult.OK)
                 return;
 
-            List<PlaylistItem> loaded = XSPF.load(openPlaylistDialog.FileName);
+            List<PlaylistItem> loaded = XSPF.Load(openPlaylistDialog.FileName);
 
             if (loaded.Count == 0) return;
             
@@ -446,7 +446,7 @@ namespace Player
             lstPlaylist.Items.Clear();
             
             foreach (PlaylistItem p in loaded)
-                addToPlaylist(p);
+                AddToPlaylist(p);
         }
 
         private void savePlaylistToolStripMenuItem_Click(object sender, EventArgs e)
@@ -454,10 +454,10 @@ namespace Player
             if (list.Count == 0 || savePlaylistDialog.ShowDialog() != DialogResult.OK)
                 return;
 
-            XSPF.save(savePlaylistDialog.FileName, list);
+            XSPF.Save(savePlaylistDialog.FileName, list);
         }
 
-        private void addToPlaylist(PlaylistItem p)
+        private void AddToPlaylist(PlaylistItem p)
         {
             if (p == null)
                 return; //unsupported file type
@@ -474,7 +474,7 @@ namespace Player
             list.Add(p);
         }
 
-        private void removeFromPlaylist(PlaylistItem p)
+        private void RemoveFromPlaylist(PlaylistItem p)
         {
             lstPlaylist.Items.Remove(p.ListViewItem);
             list.Remove(p);
@@ -482,7 +482,7 @@ namespace Player
                 activeTrack = list.Count - 1;
         }
 
-        private PlaylistItem getPlaylistItem(ListViewItem i)
+        private PlaylistItem GetPlaylistItem(ListViewItem i)
         {
             foreach (PlaylistItem p in list) //surely there's a better way of doing this than looping through all entries
                 if (p.ListViewItem == i)
@@ -496,20 +496,20 @@ namespace Player
             if (lstPlaylist.SelectedItems.Count == 0) return;
 
             if (lstPlaylist.SelectedItems.Contains(list[activeTrack].ListViewItem))
-                stop();
+                Stop();
 
             foreach (ListViewItem i in lstPlaylist.SelectedItems)
             {
-                PlaylistItem item = getPlaylistItem(i);
+                PlaylistItem item = GetPlaylistItem(i);
                 if (item != null)
-                    removeFromPlaylist(item);
+                    RemoveFromPlaylist(item);
             }
         }
 
         private void clearToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (!stopped)
-                stop();
+                Stop();
             
             lstPlaylist.Items.Clear();
             list.Clear();
@@ -522,9 +522,9 @@ namespace Player
             if (lstPlaylist.SelectedItems.Count != 1) return;
 
             if (!stopped)
-                stop();
+                Stop();
             activeTrack = lstPlaylist.SelectedIndices[0];
-            play();
+            Play();
         }
 
         private void lstPlaylist_DragEnter(object sender, DragEventArgs e)
@@ -542,7 +542,7 @@ namespace Player
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop, false);
 
                 foreach (string file in files)
-                    addToPlaylist(XSPF.getTags(file));
+                    AddToPlaylist(XSPF.GetTags(file));
             }
         }
 
@@ -572,9 +572,9 @@ namespace Player
 
             if (prevDevice != Properties.Settings.Default.Device)
             {
-                stop();
+                Stop();
                 Program.init(); //reinitialise BASS on the new device
-                play();
+                Play();
             }
         }
     }

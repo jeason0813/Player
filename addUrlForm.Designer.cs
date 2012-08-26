@@ -1,6 +1,6 @@
 ﻿namespace Player
 {
-    partial class addUrlForm
+    partial class AddUrlForm
     {
         /// <summary>
         /// Required designer variable.
